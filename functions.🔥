@@ -1,0 +1,12 @@
+from math import exp, div, sub
+
+
+fn softmax[
+    n_elements: Int
+](vector: SIMD[DType.float32, n_elements]) -> SIMD[DType.float32, n_elements]:
+    # what about argmax in algorithm.reduction?
+    let x = sub[DType.float32, n_elements](vector, vector.reduce_max())
+    let e_x = exp[DType.float32, n_elements](x)
+
+    return div[DType.float32, n_elements](e_x, e_x.reduce_add())
+

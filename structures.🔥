@@ -1,0 +1,45 @@
+from random import rand
+from memory import memset_zero
+
+
+struct Matrix:
+    # 90% from mojo docs
+    var data: DTypePointer[DType.float32]
+    var rows: Int
+    var cols: Int
+
+    fn __init__(inout self, rows: Int, cols: Int):
+        self.data = DTypePointer[DType.float32].alloc(rows * cols)
+        rand[DType.float32](self.data, rows * cols)
+        self.rows = rows
+        self.cols = cols
+
+    fn __del__(owned self):
+        self.data.free()
+
+    fn zero(inout self):
+        memset_zero(self.data, self.rows * self.cols)
+
+    @always_inline
+    fn __getitem__(self, y: Int, x: Int) -> Float32:
+        return self.load[1](y, x)
+
+    @always_inline
+    fn load[n_elements: Int](self, y: Int, x: Int) -> SIMD[DType.float32, n_elements]:
+        return self.data.simd_load[n_elements](y * self.cols + x)
+
+    @always_inline
+    fn __setitem__(self, y: Int, x: Int, val: Float32):
+        return self.store[1](y, x, val)
+
+    @always_inline
+    fn store[
+        n_elements: Int
+    ](self, y: Int, x: Int, val: SIMD[DType.float32, n_elements]):
+        self.data.simd_store[n_elements](y * self.cols + x, val)
+
+    fn transpose[
+        n_elements: Int
+    ](self) -> SIMD[DType.float32, n_elements]:
+        # TODO rearrange data in memory, return new matrix?
+        return self.data.simd_strided_load[n_elements](self.cols)

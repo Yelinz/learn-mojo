@@ -1,0 +1,1 @@
+Random bits of mojo code written to get a feel for the language
